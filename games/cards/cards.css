@@ -134,7 +134,7 @@
 .tbl .tbl-flex > * { position: relative; }
 .tbl .tbl-top { position: relative; padding: 0 12px; top: auto; flex: none; }
 .tbl .tbl-top .tb-actions { display: flex; gap: 8px; min-width: 40px; justify-content: flex-end; }
-.tbl .opps { position: relative; top: auto; flex: none; margin-top: 8px; gap: 4px; }
+.tbl .opps { position: relative; top: auto; flex: none; margin-top: 14px; gap: 4px; }
 .tbl .opps.many .opp { width: 62px; }
 .status-line { flex: none; height: 26px; margin-top: 4px; display: flex; justify-content: center; align-items: center; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity .35s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px; }
 .status-line.show { opacity: .85; }
@@ -234,3 +234,32 @@
 @keyframes botIn { from { opacity: 0; transform: translate(0, 4px) scale(.7); } to { opacity: 1; transform: translate(0, -10px) scale(1); } }
 .results-card .tie-note { text-align: center; margin: -6px 0 12px; font-size: 13px; font-weight: 700; color: #ff9f0a; }
 .results-card .by-tag { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 800; letter-spacing: .04em; background: rgba(255,159,10,.18); color: #ff9f0a; }
+
+/* ---- short landscape phones: seats left, pile in the middle, my stack right ---- */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  .tbl .tbl-flex { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); padding-top: calc(var(--safe-t) + 6px); padding-bottom: calc(var(--safe-b) + 6px); }
+  .tbl .tbl-flex.blind { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; column-gap: 10px;
+    grid-template-areas: "top top top" "opps center me" "status banner me"; }
+  .tbl .tbl-flex.blind > .tbl-top { grid-area: top; padding: 0; }
+  .tbl .tbl-flex.blind > .tbl-top .tbl-title { display: flex; align-items: baseline; gap: 10px; }
+  .tbl .tbl-flex.blind > .tbl-top .tbl-title b { display: inline; }
+  .tbl .tbl-flex.blind > .tbl-top .gtimer { display: inline; margin: 0; font-size: 18px; }
+  .tbl .tbl-flex.blind > .opps { grid-area: opps; margin: 0; flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: center; gap: 4px; padding: 0 0 0 6px; min-height: 0; }
+  .tbl .tbl-flex.blind > .opps .opp { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "r n" "r c"; column-gap: 8px; align-items: center; justify-items: start; }
+  .tbl .tbl-flex.blind > .opps .opp .ring { grid-area: r; }
+  .tbl .tbl-flex.blind > .opps .opp .oname { grid-area: n; max-width: 100%; }
+  .tbl .tbl-flex.blind > .opps .opp .ocount { grid-area: c; }
+  .tbl .tbl-flex.blind > .opps .opp .out-tag { top: 2px; right: 0; }
+  .tbl .tbl-flex.blind > .opps .opp .avatar { width: 36px !important; height: 36px !important; }
+  .tbl .tbl-flex.blind > .status-line { grid-area: status; margin: 0; height: 40px; padding: 0; justify-content: flex-start; font-size: 12px; }
+  .tbl .tbl-flex.blind > .tbl-center { grid-area: center; min-height: 0; }
+  .tbl .tbl-flex.blind > .turn-banner { grid-area: banner; margin: 0; justify-self: center; align-self: center; height: 40px; }
+  .tbl .tbl-flex.blind > .me-area { grid-area: me; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 0; }
+  .tbl .tbl-flex.blind .stack-row { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .tbl .tbl-flex.blind .me-chip { flex-direction: row; align-items: center; gap: 8px; }
+  .tbl .tbl-flex.blind .me-chip .ring { order: 0; }
+  .tbl .tbl-flex.blind .me-side { order: 3; justify-content: center; }
+  .tbl .tbl-flex.blind .stack-wrap { gap: 2px; }
+  .tbl .tbl-flex.blind .my-stack { width: 64px; height: 90px; }
+  .tbl .tbl-flex.blind .my-stack .stk img { width: 60px; }
+}

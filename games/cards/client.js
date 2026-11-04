@@ -506,25 +506,48 @@ function makeTable(container, o) {
     return el ? centerOf(el.querySelector('.ring')) : { x: innerWidth / 2, y: 80 };
   };
 
-  // centre area: machine on top while dealing, otherwise a big pile in the middle
+  // centre area: machine on top while dealing, otherwise a big pile in the middle.
+  // Everything is measured from the centre box as it is RIGHT NOW. The box changes size when seats,
+  // the banner or the hand re-render, so a ResizeObserver (plus a cheap position check) re-runs this.
+  const INFO_H = 26, GAP = 8;
+  let lastBox = '';
   function layoutCenter() {
     const c = center.getBoundingClientRect();
     if (!c.height) return;
-    let pw, py;
+    lastBox = [c.left, c.top, c.width, c.height].map(Math.round).join(',');
+    let pw, py, infoTop;
     if (phase === 'machine') {
       const mw = Math.min(c.width * 0.7, 300), mh = Math.min(c.height * 0.5, mw * 0.72);
       Object.assign(anchorM.style, { width: mw + 'px', height: mh + 'px', top: c.height * 0.04 + 'px' });
       pw = Math.min(c.width * 0.24, (c.height * 0.36) / 1.4, 110);
       py = c.height * 0.04 + mh + (c.height - c.height * 0.04 - mh) * 0.5;
+      infoTop = py + (pw * 1.4) / 2 + GAP;
     } else {
-      pw = Math.min(c.width * 0.4, 168, (c.height - 64) / 1.4);
-      py = c.height * 0.46;
+      // pile + "N cards in centre" are one block, centred in the free space between the seats and the banner
+      const availH = c.height - GAP * 2 - INFO_H - GAP;
+      pw = Math.max(36, Math.min(c.width * 0.4, 150, availH / 1.4));
+      const ph = pw * 1.4, total = ph + GAP + INFO_H;
+      const top = Math.max(GAP, (c.height - total) / 2);
+      py = top + ph / 2;
+      infoTop = top + ph + GAP;
     }
     for (const el of [anchorP, dropZone]) Object.assign(el.style, { width: pw + 'px', top: py + 'px' });
-    pileInfo.style.top = py + (pw * 1.4) / 2 + 8 + 'px';
+    pileInfo.style.top = infoTop + 'px';
     flash.style.top = py + 'px';
     renderer?.resize?.();
   }
+  let layoutRaf = 0;
+  const scheduleLayout = () => { if (!layoutRaf) layoutRaf = requestAnimationFrame(() => { layoutRaf = 0; if (!destroyed) layoutCenter(); }); };
+  const layoutRO = typeof ResizeObserver === 'function' ? new ResizeObserver(scheduleLayout) : null;
+  layoutRO?.observe(center); layoutRO?.observe(opps); layoutRO?.observe(meArea); layoutRO?.observe(root);
+  // safety net: if the box moved without changing size (RO cannot see that), re-measure
+  const boxT = setInterval(() => {
+    if (destroyed) return;
+    const c = center.getBoundingClientRect();
+    if ([c.left, c.top, c.width, c.height].map(Math.round).join(',') !== lastBox) layoutCenter();
+  }, 400);
+  const onVV = () => scheduleLayout();
+  window.visualViewport?.addEventListener('resize', onVV);
 
   let timerEl = null, ringEl = null, autoNote = null, warned = false;
   function fmtClock(ms) { const sec = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
@@ -863,6 +886,7 @@ function makeTable(container, o) {
     v = getView();
     const g = v.game;
     if (!g) return;
+    layer.classList.toggle('blind', blind());
     if (v.status !== 'finished') { resultsShown = false; root.querySelector('.results')?.remove(); }
     const fresh = g.events.filter(e => e.seq > lastSeq);
     if (lastSeq === 0) {
@@ -926,7 +950,7 @@ function makeTable(container, o) {
 
   return {
     update, presence, topActions, say,
-    destroy() { destroyed = true; clearInterval(clockT); removeEventListener('resize', onResize); renderer?.destroy(); root.remove(); },
+    destroy() { destroyed = true; clearInterval(clockT); clearInterval(boxT); layoutRO?.disconnect(); window.visualViewport?.removeEventListener('resize', onVV); cancelAnimationFrame(layoutRaf); removeEventListener('resize', onResize); renderer?.destroy(); root.remove(); },
   };
 }
 
