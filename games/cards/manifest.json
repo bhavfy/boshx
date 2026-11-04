@@ -1,0 +1,15 @@
+{
+  "id": "cards",
+  "name": "BOSHX Playing Cards",
+  "short": "Playing Cards",
+  "description": "Real multiplayer cards with a 3D shuffling machine. Save your cards, match the centre card, take the whole pile — last player standing wins.",
+  "category": "Cards",
+  "mode": "multiplayer",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "icon": "🃏",
+  "color": "#1c1c1e",
+  "client": "games/cards/client.js",
+  "server": "cards",
+  "status": "published"
+}
